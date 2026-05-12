@@ -3,8 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 
 import requests
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from rdkit import Chem
@@ -26,6 +26,14 @@ class NameIn(BaseModel):
 
 class MolIn(BaseModel):
     mol_block: str
+
+
+class PeptideIn(BaseModel):
+    sequence: str
+
+
+VALID_AA = set("ACDEFGHIKLMNPQRSTVWY")
+MAX_PEPTIDE_LEN = 100
 
 
 def _embed_3d(mol: Chem.Mol) -> Chem.Mol:
@@ -60,6 +68,14 @@ def _describe(mol: Chem.Mol, name: str | None = None) -> dict:
         "num_rings": rdMolDescriptors.CalcNumRings(mol),
         "name": name,
     }
+
+
+def _describe_peptide(mol: Chem.Mol, seq: str) -> dict:
+    desc = _describe(mol, name=f"Peptide ({seq})")
+    desc["pdb_block"] = Chem.MolToPDBBlock(mol)
+    desc["sequence"] = seq
+    desc["residues"] = len(seq)
+    return desc
 
 
 @app.post("/api/from-smiles")
@@ -127,7 +143,42 @@ def from_mol(payload: MolIn):
     return _describe(mol)
 
 
+@app.post("/api/from-peptide")
+def from_peptide(payload: PeptideIn):
+    raw = payload.sequence.strip().upper()
+    seq = "".join(c for c in raw if not c.isspace() and c != "-")
+    if not seq:
+        raise HTTPException(400, "Sequence is empty.")
+    invalid = sorted(set(seq) - VALID_AA)
+    if invalid:
+        raise HTTPException(
+            422,
+            f"Invalid amino acid codes: {', '.join(invalid)}. "
+            "Use one-letter codes from the 20 standard amino acids.",
+        )
+    if len(seq) > MAX_PEPTIDE_LEN:
+        raise HTTPException(
+            422,
+            f"Sequence too long ({len(seq)} > {MAX_PEPTIDE_LEN}). "
+            "Building accurate 3D structures for longer proteins requires a folding model.",
+        )
+    mol = Chem.MolFromSequence(seq)
+    if mol is None:
+        raise HTTPException(422, f"Could not build peptide from sequence {seq!r}.")
+    mol = _embed_3d(mol)
+    return _describe_peptide(mol, seq)
+
+
 app.mount("/static", StaticFiles(directory=STATIC), name="static")
+
+
+@app.middleware("http")
+async def no_cache(request: Request, call_next):
+    response: Response = await call_next(request)
+    if request.url.path == "/" or request.url.path.startswith("/static/"):
+        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
+    return response
 
 
 @app.get("/")

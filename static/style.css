@@ -241,3 +241,90 @@ button.primary:disabled { opacity: 0.5; cursor: wait; }
   position: relative;
   background: #000;
 }
+
+.seq-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.seq-meta #peptide-length {
+  margin-right: auto;
+}
+
+.seq-btn {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.seq-btn:hover { border-color: var(--accent); }
+
+.aa-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 4px 0;
+}
+
+.aa-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+
+.aa-group-label {
+  width: 70px;
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.aa-btn {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  cursor: pointer;
+  min-width: 56px;
+  text-align: left;
+}
+
+.aa-btn:hover {
+  border-color: var(--accent);
+  background: var(--panel-2);
+}
+
+.aa-btn .aa-code {
+  display: inline-block;
+  width: 12px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.aa-group[data-group="Nonpolar"] .aa-btn { border-left: 3px solid #d29922; }
+.aa-group[data-group="Polar"] .aa-btn { border-left: 3px solid #58a6ff; }
+.aa-group[data-group="Positive"] .aa-btn { border-left: 3px solid #3fb950; }
+.aa-group[data-group="Negative"] .aa-btn { border-left: 3px solid #f85149; }
+
+.ex-pep {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.ex-pep:hover { border-color: var(--accent); }

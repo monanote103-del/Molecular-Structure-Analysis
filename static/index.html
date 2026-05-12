@@ -19,6 +19,7 @@
         <button class="tab active" data-tab="smiles" role="tab">SMILES</button>
         <button class="tab" data-tab="name" role="tab">Name</button>
         <button class="tab" data-tab="mol" role="tab">MOL / SDF</button>
+        <button class="tab" data-tab="peptide" role="tab">Peptide</button>
       </div>
 
       <div class="tab-panel active" data-panel="smiles">
@@ -46,6 +47,60 @@
         <div class="hint">2D MOL files will be re-embedded to 3D automatically.</div>
       </div>
 
+      <div class="tab-panel" data-panel="peptide">
+        <label for="peptide-input">Sequence (one-letter codes)</label>
+        <input id="peptide-input" type="text" placeholder="e.g. ACDEFGHIK" autocomplete="off" />
+        <div class="seq-meta">
+          <span id="peptide-length">0 residues</span>
+          <button id="peptide-backspace" class="seq-btn" type="button">⌫ Remove last</button>
+          <button id="peptide-clear" class="seq-btn" type="button">Clear</button>
+        </div>
+
+        <div class="aa-grid" id="aa-grid">
+          <div class="aa-group" data-group="Nonpolar">
+            <span class="aa-group-label">Nonpolar</span>
+            <button type="button" class="aa-btn" data-aa="G" title="Glycine (G)"><span class="aa-code">G</span> Gly</button>
+            <button type="button" class="aa-btn" data-aa="A" title="Alanine (A)"><span class="aa-code">A</span> Ala</button>
+            <button type="button" class="aa-btn" data-aa="V" title="Valine (V)"><span class="aa-code">V</span> Val</button>
+            <button type="button" class="aa-btn" data-aa="L" title="Leucine (L)"><span class="aa-code">L</span> Leu</button>
+            <button type="button" class="aa-btn" data-aa="I" title="Isoleucine (I)"><span class="aa-code">I</span> Ile</button>
+            <button type="button" class="aa-btn" data-aa="M" title="Methionine (M)"><span class="aa-code">M</span> Met</button>
+            <button type="button" class="aa-btn" data-aa="F" title="Phenylalanine (F)"><span class="aa-code">F</span> Phe</button>
+            <button type="button" class="aa-btn" data-aa="W" title="Tryptophan (W)"><span class="aa-code">W</span> Trp</button>
+            <button type="button" class="aa-btn" data-aa="P" title="Proline (P)"><span class="aa-code">P</span> Pro</button>
+          </div>
+          <div class="aa-group" data-group="Polar">
+            <span class="aa-group-label">Polar</span>
+            <button type="button" class="aa-btn" data-aa="S" title="Serine (S)"><span class="aa-code">S</span> Ser</button>
+            <button type="button" class="aa-btn" data-aa="T" title="Threonine (T)"><span class="aa-code">T</span> Thr</button>
+            <button type="button" class="aa-btn" data-aa="C" title="Cysteine (C)"><span class="aa-code">C</span> Cys</button>
+            <button type="button" class="aa-btn" data-aa="Y" title="Tyrosine (Y)"><span class="aa-code">Y</span> Tyr</button>
+            <button type="button" class="aa-btn" data-aa="N" title="Asparagine (N)"><span class="aa-code">N</span> Asn</button>
+            <button type="button" class="aa-btn" data-aa="Q" title="Glutamine (Q)"><span class="aa-code">Q</span> Gln</button>
+          </div>
+          <div class="aa-group" data-group="Positive">
+            <span class="aa-group-label">Positive</span>
+            <button type="button" class="aa-btn" data-aa="K" title="Lysine (K)"><span class="aa-code">K</span> Lys</button>
+            <button type="button" class="aa-btn" data-aa="R" title="Arginine (R)"><span class="aa-code">R</span> Arg</button>
+            <button type="button" class="aa-btn" data-aa="H" title="Histidine (H)"><span class="aa-code">H</span> His</button>
+          </div>
+          <div class="aa-group" data-group="Negative">
+            <span class="aa-group-label">Negative</span>
+            <button type="button" class="aa-btn" data-aa="D" title="Aspartate (D)"><span class="aa-code">D</span> Asp</button>
+            <button type="button" class="aa-btn" data-aa="E" title="Glutamate (E)"><span class="aa-code">E</span> Glu</button>
+          </div>
+        </div>
+
+        <div class="examples">
+          Try:
+          <button class="ex-pep" data-seq="GGG">triglycine</button>
+          <button class="ex-pep" data-seq="RGD">RGD motif</button>
+          <button class="ex-pep" data-seq="YGGFL">Leu-enkephalin</button>
+          <button class="ex-pep" data-seq="GIGAVLKVLTTGLPALISWIKRKRQQ">melittin (N-term)</button>
+        </div>
+        <div class="hint">Builds a linear peptide with real peptide bonds via RDKit, then embeds 3D geometry. For accurate fold/secondary structure of longer proteins use AlphaFold or similar.</div>
+      </div>
+
       <div class="actions">
         <button id="build-btn" class="primary">Build 3D model</button>
         <span id="status" class="status"></span>
@@ -58,6 +113,7 @@
         <div><span class="label">Atoms</span><span id="info-atoms">—</span></div>
         <div><span class="label">Heavy atoms</span><span id="info-heavy">—</span></div>
         <div><span class="label">Rings</span><span id="info-rings">—</span></div>
+        <div class="full" id="info-seq-row" hidden><span class="label">Sequence</span><span id="info-seq" class="mono">—</span></div>
         <div class="full"><span class="label">SMILES</span><span id="info-smiles" class="mono">—</span></div>
       </div>
     </section>
@@ -80,6 +136,6 @@
     </section>
   </main>
 
-  <script src="/static/app.js"></script>
+  <script src="/static/app.js?v=4"></script>
 </body>
 </html>

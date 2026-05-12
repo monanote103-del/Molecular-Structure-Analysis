@@ -2,6 +2,8 @@ const $ = (sel) => document.querySelector(sel);
 
 const state = {
   molBlock: null,
+  pdbBlock: null,
+  isPeptide: false,
   viewer: null,
   spinning: false,
 };
@@ -36,6 +38,46 @@ document.querySelectorAll(".ex").forEach((b) => {
   });
 });
 
+document.body.addEventListener("click", (e) => {
+  const btn = e.target.closest(".aa-btn");
+  if (btn) appendAA(btn.dataset.aa);
+});
+
+function updateSeqMeta() {
+  const seq = $("#peptide-input").value.replace(/[^A-Za-z]/g, "").toUpperCase();
+  $("#peptide-length").textContent = `${seq.length} residue${seq.length === 1 ? "" : "s"}`;
+}
+
+function appendAA(code) {
+  const input = $("#peptide-input");
+  input.value = (input.value + code).toUpperCase();
+  updateSeqMeta();
+  input.focus();
+}
+
+$("#peptide-input")?.addEventListener("input", (e) => {
+  e.target.value = e.target.value.toUpperCase();
+  updateSeqMeta();
+});
+
+$("#peptide-backspace")?.addEventListener("click", () => {
+  const input = $("#peptide-input");
+  input.value = input.value.slice(0, -1);
+  updateSeqMeta();
+});
+
+$("#peptide-clear")?.addEventListener("click", () => {
+  $("#peptide-input").value = "";
+  updateSeqMeta();
+});
+
+document.querySelectorAll(".ex-pep").forEach((b) => {
+  b.addEventListener("click", () => {
+    $("#peptide-input").value = b.dataset.seq;
+    updateSeqMeta();
+  });
+});
+
 function initViewer() {
   if (state.viewer) return state.viewer;
   state.viewer = $3Dmol.createViewer("viewer", { backgroundColor: "black" });
@@ -67,16 +109,24 @@ function applyStyle() {
   v.render();
 }
 
-function showMolecule(molBlock) {
-  state.molBlock = molBlock;
+function showMolecule(data) {
+  state.molBlock = data.mol_block;
+  state.pdbBlock = data.pdb_block || null;
+  state.isPeptide = !!data.pdb_block;
   const v = initViewer();
   v.removeAllModels();
   v.removeAllLabels();
-  v.addModel(molBlock, "mol");
+  if (state.isPeptide) {
+    v.addModel(state.pdbBlock, "pdb");
+  } else {
+    v.addModel(state.molBlock, "mol");
+  }
   applyStyle();
   v.zoomTo();
   v.render();
-  $("#download-btn").disabled = false;
+  const dl = $("#download-btn");
+  dl.disabled = false;
+  dl.textContent = state.isPeptide ? "Download .pdb" : "Download .mol";
 }
 
 function fillInfo(data) {
@@ -87,6 +137,13 @@ function fillInfo(data) {
   $("#info-heavy").textContent = data.num_heavy_atoms;
   $("#info-rings").textContent = data.num_rings;
   $("#info-smiles").textContent = data.smiles;
+  const seqRow = $("#info-seq-row");
+  if (data.sequence) {
+    seqRow.hidden = false;
+    $("#info-seq").textContent = `${data.sequence} (${data.residues} residues)`;
+  } else {
+    seqRow.hidden = true;
+  }
 }
 
 async function build() {
@@ -102,11 +159,16 @@ async function build() {
     if (!name) return setStatus("Enter a compound name.", "error");
     url = "/api/from-name";
     body = { name };
-  } else {
+  } else if (tab === "mol") {
     const mol_block = $("#mol-input").value;
     if (!mol_block.trim()) return setStatus("Paste a MOL/SDF block.", "error");
     url = "/api/from-mol";
     body = { mol_block };
+  } else {
+    const sequence = $("#peptide-input").value.trim();
+    if (!sequence) return setStatus("Add at least one amino acid.", "error");
+    url = "/api/from-peptide";
+    body = { sequence };
   }
 
   setStatus("Building…");
@@ -119,7 +181,7 @@ async function build() {
     });
     const data = await r.json();
     if (!r.ok) throw new Error(data.detail || `HTTP ${r.status}`);
-    showMolecule(data.mol_block);
+    showMolecule(data);
     fillInfo(data);
     setStatus("Built " + data.formula, "ok");
   } catch (e) {
@@ -145,14 +207,19 @@ $("#spin").addEventListener("change", (e) => {
 });
 
 $("#download-btn").addEventListener("click", () => {
-  if (!state.molBlock) return;
-  const blob = new Blob([state.molBlock], { type: "chemical/x-mdl-molfile" });
+  const usePdb = state.isPeptide && state.pdbBlock;
+  const content = usePdb ? state.pdbBlock : state.molBlock;
+  if (!content) return;
+  const blob = new Blob([content], {
+    type: usePdb ? "chemical/x-pdb" : "chemical/x-mdl-molfile",
+  });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "molecule.mol";
+  a.download = usePdb ? "peptide.pdb" : "molecule.mol";
   a.click();
   URL.revokeObjectURL(url);
 });
+
 
 initViewer();
