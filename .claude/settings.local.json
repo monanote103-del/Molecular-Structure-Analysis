@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 -m venv .venv)",
+      "Bash(.venv/bin/pip install *)",
+      "Bash(.venv/bin/python -c \"import rdkit, fastapi, uvicorn, requests; print\\(rdkit.__version__, fastapi.__version__\\)\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('formula:', d['formula']\\); print\\('MW:', d['mol_weight']\\); print\\('rings:', d['num_rings']\\); print\\('mol_block lines:', d['mol_block'].count\\(chr\\(10\\)\\)\\)\")",
+      "Bash(curl -s -o /dev/null -w 'status: %{http_code}\\\\n' -X POST http://127.0.0.1:8765/api/from-smiles -H 'Content-Type: application/json' -d '{\"smiles\":\"this-is-not-smiles!!\"}')",
+      "Bash(curl -s -X POST http://127.0.0.1:8765/api/from-smiles -H \"Content-Type: application/json\" -d '{\"smiles\":\"CCO\"}')",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('formula:', d['formula']\\); print\\('SMILES:', d['smiles']\\)\")",
+      "Bash(python3 -c ' *)"
+    ]
+  }
+}

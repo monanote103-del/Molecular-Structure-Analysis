@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Molecular Structure Analysis — 3D Builder</title>
+<link rel="stylesheet" href="/static/style.css" />
+<script src="https://3Dmol.org/build/3Dmol-min.js"></script>
+</head>
+<body>
+  <header>
+    <h1>Molecular Structure → 3D Model</h1>
+    <p class="sub">Enter a SMILES string, a chemical name, or paste a MOL/SDF block. The server uses RDKit (ETKDGv3 + MMFF94) to generate optimized 3D coordinates.</p>
+  </header>
+
+  <main>
+    <section class="input-pane">
+      <div class="tabs" role="tablist">
+        <button class="tab active" data-tab="smiles" role="tab">SMILES</button>
+        <button class="tab" data-tab="name" role="tab">Name</button>
+        <button class="tab" data-tab="mol" role="tab">MOL / SDF</button>
+      </div>
+
+      <div class="tab-panel active" data-panel="smiles">
+        <label for="smiles-input">SMILES</label>
+        <input id="smiles-input" type="text" placeholder="e.g. CC(=O)Oc1ccccc1C(=O)O (aspirin)" />
+        <div class="examples">
+          Try:
+          <button class="ex" data-smiles="CCO">ethanol</button>
+          <button class="ex" data-smiles="c1ccccc1">benzene</button>
+          <button class="ex" data-smiles="CC(=O)Oc1ccccc1C(=O)O">aspirin</button>
+          <button class="ex" data-smiles="CN1C=NC2=C1C(=O)N(C(=O)N2C)C">caffeine</button>
+          <button class="ex" data-smiles="C1CCCCC1">cyclohexane</button>
+        </div>
+      </div>
+
+      <div class="tab-panel" data-panel="name">
+        <label for="name-input">Compound name</label>
+        <input id="name-input" type="text" placeholder="e.g. ibuprofen, glucose, paracetamol" />
+        <div class="hint">Looked up via PubChem (requires internet).</div>
+      </div>
+
+      <div class="tab-panel" data-panel="mol">
+        <label for="mol-input">MOL / SDF block</label>
+        <textarea id="mol-input" rows="10" placeholder="Paste a MOL or SDF block exported from ChemDraw, Avogadro, Ketcher, etc."></textarea>
+        <div class="hint">2D MOL files will be re-embedded to 3D automatically.</div>
+      </div>
+
+      <div class="actions">
+        <button id="build-btn" class="primary">Build 3D model</button>
+        <span id="status" class="status"></span>
+      </div>
+
+      <div class="info-panel">
+        <div><span class="label">Name</span><span id="info-name">—</span></div>
+        <div><span class="label">Formula</span><span id="info-formula">—</span></div>
+        <div><span class="label">MW</span><span id="info-mw">—</span></div>
+        <div><span class="label">Atoms</span><span id="info-atoms">—</span></div>
+        <div><span class="label">Heavy atoms</span><span id="info-heavy">—</span></div>
+        <div><span class="label">Rings</span><span id="info-rings">—</span></div>
+        <div class="full"><span class="label">SMILES</span><span id="info-smiles" class="mono">—</span></div>
+      </div>
+    </section>
+
+    <section class="viewer-pane">
+      <div class="viewer-controls">
+        <label>Style
+          <select id="style-select">
+            <option value="stick" selected>Stick</option>
+            <option value="ball">Ball &amp; stick</option>
+            <option value="sphere">Space-filling</option>
+            <option value="line">Line</option>
+          </select>
+        </label>
+        <label><input type="checkbox" id="show-labels" /> Atom labels</label>
+        <label><input type="checkbox" id="spin" /> Spin</label>
+        <button id="download-btn" disabled>Download .mol</button>
+      </div>
+      <div id="viewer"></div>
+    </section>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
